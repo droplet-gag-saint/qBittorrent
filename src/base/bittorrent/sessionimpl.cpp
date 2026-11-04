@@ -2180,6 +2180,11 @@ lt::settings_pack SessionImpl::loadLTSettings() const
         settingsPack.set_int(lt::settings_pack::inactive_down_rate, downloadRateForSlowTorrents() * 1024); // KiB to Bytes
         settingsPack.set_int(lt::settings_pack::inactive_up_rate, uploadRateForSlowTorrents() * 1024); // KiB to Bytes
         settingsPack.set_int(lt::settings_pack::auto_manage_startup, slowTorrentsInactivityTimer());
+        // Torrents started from the queue must have time to become inactive before the next
+        // auto-manage pass, otherwise they are queued again and the queue never advances
+        const int autoManageInterval = ignoreSlowTorrentsForQueueing()
+            ? std::max(30, (slowTorrentsInactivityTimer() + 10)) : 30;
+        settingsPack.set_int(lt::settings_pack::auto_manage_interval, autoManageInterval);
     }
     else
     {
